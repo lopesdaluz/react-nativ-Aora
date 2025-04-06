@@ -1,50 +1,29 @@
-# Welcome to your Expo app 👋
+Aora Mobile App
+Project Overview
+This mobile app is based on a tutorial video that walks through building a simple app with React Native. While following the tutorial, I encountered some issues, such as the nativedwind bug, which I had to work around. The project is still in development, and many features are being implemented and refined.
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Features
+Sign In: Users can log in with their email and password.
 
-## Get started
+Password Visibility Toggle: Allows users to toggle the visibility of their password.
 
-1. Install dependencies
+Navigation Links: Easy navigation between sign-in and sign-up screens.
 
-   ```bash
-   npm install
-   ```
+Bugs and Workarounds
+Bug: nativedwind module could not be resolved.
 
-2. Start the app
+Solution: Instead of using nativedwind, I chose to implement custom styling and navigation logic to move forward with the project.
 
-   ```bash
-    npx expo start
-   ```
+Bug: UI responsiveness issues on smaller screens.
 
-In the output, you'll find options to open the app in a
+Solution: Adjusted the layout for better compatibility across different screen sizes, but this will be further optimized.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Ongoing Development
+This project is still in progress, and many parts are subject to change. It's not yet a finished product, and I'm continuing to work on new features and improvements.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+Planned Features
+Sign-In Validation: Adding input validation to ensure users enter valid information.
 
-## Get a fresh project
+Error Handling: Implementing error handling for incorrect sign-in attempts.
 
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+UI Enhancements: Further UI refinements and animations for a smoother user experience.
