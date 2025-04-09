@@ -1,10 +1,11 @@
-import { View, Text, Image, ScrollView } from "react-native";
+import { View, Text, Image, ScrollView, Alert } from "react-native";
 import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { images } from "../../constants";
 import FormField from "../../components/FormField";
 import CustomButton from "../../components/CustomButton";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
+import { loginUser } from "../../lib/api";
 
 const SignIn = () => {
   const [form, setForm] = useState({
@@ -13,8 +14,20 @@ const SignIn = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const submit = () => {
-    // Handle submission logic here
+  const submit = async () => {
+    console.log("Sign in successfully working:", form);
+    setIsSubmitting(true);
+    try {
+      const user = await loginUser(form.email, form.password);
+      console.log("inloggad användare:", user);
+      Alert.alert("Success", `Welcome back, ${user.username}!`);
+      router.replace("/home"); //skapa komponenten senare
+    } catch (error) {
+      console.log("Fel vid inloggning:", error.message);
+      Alert.alert("Error:", error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
