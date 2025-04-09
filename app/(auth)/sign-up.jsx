@@ -1,10 +1,11 @@
-import { View, Text, Image, ScrollView } from "react-native";
+import { View, Text, Image, ScrollView, Alert } from "react-native";
 import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { images } from "../../constants";
 import FormField from "../../components/FormField";
 import CustomButton from "../../components/CustomButton";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
+import { createUser } from "../../lib/api";
 
 const SignUp = () => {
   const [form, setForm] = useState({
@@ -14,8 +15,18 @@ const SignUp = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const submit = () => {
-    // Handle submission logic here
+  const submit = async () => {
+    console.log("Submit successfully working:", form);
+    setIsSubmitting(true);
+    try {
+      await createUser(form.email, form.password, form.username);
+      Alert.alert("Success", "Account created please sign in");
+      router.replace("/sign-in"); //Navigerar till sign in skärmen
+    } catch (error) {
+      Alert.alert("Error", error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -68,7 +79,7 @@ const SignUp = () => {
 
         <View style={{ marginTop: 28 }}>
           <CustomButton
-            title="Sign In"
+            title="Sign Up"
             handlePress={submit}
             isLoading={isSubmitting}
           />
