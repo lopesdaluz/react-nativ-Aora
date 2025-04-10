@@ -50,6 +50,7 @@ app.post("/api/login", async (req, res) => {
       user: { id: user._id, email, username: user.username },
     });
   } catch (error) {
+    console.error("Serverfel vid inloggning:", error);
     res.status(500).json({ error: "serverfel" });
   }
 });

@@ -20,7 +20,7 @@ const SignIn = () => {
     try {
       const user = await loginUser(form.email, form.password);
       console.log("inloggad användare:", user);
-      Alert.alert("Success", `Welcome back, ${user.username}!`);
+      // Alert.alert("Success", `Welcome back, ${user.username}!`);
       router.replace("/home"); //skapa komponenten senare
     } catch (error) {
       console.log("Fel vid inloggning:", error.message);
