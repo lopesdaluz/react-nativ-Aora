@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs");
 const cors = require("cors");
 const User = require("./models/User");
 const jwt = require("jsonwebtoken");
+const Post = require("./models/Post");
 
 const app = express();
 app.use(express.json());
@@ -66,6 +67,31 @@ app.get("/api/user", async (req, res) => {
     res.json({ id: user._id, email: user.email, username: user.username });
   } catch (error) {
     res.status(401).json({ error: "Ogiltig token" });
+  }
+});
+
+//En router för att hämta alla posts
+app.get("/api/posts", async (req, res) => {
+  try {
+    const posts = await Post.find();
+    res.json(posts);
+  } catch (error) {
+    res.status(500).json({ message: "Fel vid hämtning av pots" });
+  }
+});
+
+// POST: Skapa en ny post
+app.post("/api/posts", async (req, res) => {
+  try {
+    const { title, creator } = req.body;
+    if (!title) return res.status(400).json({ message: "Title saknas" });
+    const post = new Post({ title, creator });
+    await post.save();
+    res.status(201).json(post);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Fel vid skapande av post", error: error.message });
   }
 });
 
