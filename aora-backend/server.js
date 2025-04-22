@@ -83,9 +83,15 @@ app.get("/api/posts", async (req, res) => {
 // POST: Skapa en ny post
 app.post("/api/posts", async (req, res) => {
   try {
-    const { title, creator } = req.body;
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return res.status(401).json({ message: "Ingen token" });
+    const decoded = jwt.verify(token, "dinhemliganyckel");
+    const user = await User.findById(decoded.id);
+    if (!user) return res.status(404).json({ message: "Användare ej hittad" });
+
+    const { title } = req.body;
     if (!title) return res.status(400).json({ message: "Title saknas" });
-    const post = new Post({ title, creator });
+    const post = new Post({ title, creator: user._id });
     await post.save();
     res.status(201).json(post);
   } catch (error) {

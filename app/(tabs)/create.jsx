@@ -1,8 +1,58 @@
-import { View, Text, SafeAreaView, TextInput } from "react-native";
+import {
+  View,
+  Text,
+  SafeAreaView,
+  TextInput,
+  Button,
+  Platform,
+} from "react-native";
 import React, { useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getCurrentUser } from "../../lib/api";
+import { useNavigation } from "@react-navigation/native";
+
+const BASE_URL =
+  Platform.OS === "web" ? "http://localhost:3000" : "http://192.168.0.54:3000";
 
 const Create = () => {
-  const [title, setTitle] = useState(" ");
+  const [title, setTitle] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(null);
+
+  const navigation = useNavigation();
+
+  //hantera post-anropet
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      if (!title.trim()) throw new Error("Title cannot be empty");
+      const token = await AsyncStorage.getItem("token"); //hämtar token för autentisering
+      if (!token) throw new Error("No token found");
+      const user = await getCurrentUser(); //hämtar den inloggade
+      const response = await fetch(`${BASE_URL}/api/posts`, {
+        //skickar POST till api/post
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ title, creator: user.id }),
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || "Failed to create post");
+      }
+
+      setTitle(""); //Rensa input
+      alert("Post created");
+      navigation.navigate("home");
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#161622" }}>
@@ -29,6 +79,14 @@ const Create = () => {
           placeholder="Enter post title"
           placeholderTextColor="#888888"
         />
+        {error && (
+          <Text style={{ color: "#FF0000", marginBottom: 10 }}>{error}</Text>
+        )}
+        <Button
+          title={isSubmitting ? "Submitting...." : "Submit"}
+          onPress={handleSubmit}
+          disabled={isSubmitting}
+        ></Button>
       </View>
     </SafeAreaView>
   );

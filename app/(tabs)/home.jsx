@@ -6,8 +6,8 @@ import {
   ActivityIndicator,
   Platform,
 } from "react-native";
-import React from "react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import { getCurrentUser } from "../../lib/api";
 
 const BASE_URL =
@@ -17,28 +17,35 @@ const Home = () => {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [posts, setPosts] = useState([]);
+  const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      setIsLoading(true);
-      try {
-        const currentUser = await getCurrentUser();
-        console.log("Hämta användare:", currentUser);
-        setUser(currentUser);
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      const currentUser = await getCurrentUser();
+      console.log("Hämtad användare:", currentUser);
+      setUser(currentUser);
 
-        //Hämta posts från backend
-        const response = await fetch(`${BASE_URL}/api/posts`);
-        if (!response.ok) throw new Error("kunde inte hämta posts");
-        const postData = await response.json();
-        setPosts(postData);
-      } catch (error) {
-        console.log("Fel vid hämtning av användare:", error.message);
-      } finally {
-        setIsLoading(false);
+      const response = await fetch(`${BASE_URL}/api/posts`);
+      if (!response.ok) {
+        throw new Error(`HTTP-fel: ${response.status} ${response.statusText}`);
       }
-    };
-    fetchUser();
-  }, []);
+      const postData = await response.json();
+      console.log("Hämtade posts:", postData);
+      setPosts(postData);
+    } catch (error) {
+      console.log("Fel vid hämtning:", error.message);
+      setError(error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchData();
+    }, [])
+  );
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#161622" }}>
@@ -59,7 +66,9 @@ const Home = () => {
               >
                 {user ? `Welcome back, ${user.username}!` : "No user found"}
               </Text>
-              {posts.length > 0 ? (
+              {error ? (
+                <Text style={{ color: "#FF0000" }}>Fel: {error}</Text>
+              ) : posts.length > 0 ? (
                 posts.map((post) => (
                   <Text
                     key={post._id}
@@ -74,7 +83,7 @@ const Home = () => {
                   </Text>
                 ))
               ) : (
-                <Text style={{ color: "#FFFFF" }}>No post available</Text>
+                <Text style={{ color: "#FFFFFF" }}>No posts available</Text>
               )}
             </>
           )}
