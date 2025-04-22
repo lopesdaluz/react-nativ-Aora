@@ -2,12 +2,13 @@ import {
   View,
   Text,
   SafeAreaView,
-  ScrollView,
+  FlatList,
   ActivityIndicator,
   Platform,
   Image,
+  StyleSheet,
 } from "react-native";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { getCurrentUser } from "../../lib/api";
 
@@ -48,61 +49,126 @@ const Home = () => {
     }, [])
   );
 
+  const renderPost = ({ item }) => (
+    <View style={styles.card}>
+      <Text style={styles.cardTitle}>{item.title}</Text>
+      {item.image && (
+        <Image
+          source={{ uri: item.image }}
+          style={styles.cardImage}
+          resizeMode="cover"
+        />
+      )}
+    </View>
+  );
+
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#161622" }}>
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-        <View style={{ padding: 16, flex: 1, justifyContent: "center" }}>
-          {isLoading ? (
-            <ActivityIndicator size="large" color="#FFA001" />
-          ) : (
-            <>
-              <Text
-                style={{
-                  fontSize: 24,
-                  color: "#FFFFFF",
-                  fontFamily: "Psemibold",
-                  textAlign: "center",
-                  marginBottom: 20,
-                }}
-              >
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        {isLoading ? (
+          <ActivityIndicator
+            size="large"
+            color="#FFA001"
+            style={styles.loader}
+          />
+        ) : (
+          <>
+            {/* Välkomsttext i egen View */}
+            <View style={styles.headerContainer}>
+              <Text style={styles.header}>
                 {user ? `Welcome back, ${user.username}!` : "No user found"}
               </Text>
-              {error ? (
-                <Text style={{ color: "#FF0000" }}>Fel: {error}</Text>
-              ) : posts.length > 0 ? (
-                posts.map((post) => (
-                  <View
-                    key={post._id}
-                    style={{
-                      marginVertical: 10,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color: "#bc1111",
-                        fontSize: 16,
-                        fontFamily: "Pregular",
-                      }}
-                    >
-                      {post.title}
-                    </Text>
-                    {post.image && (
-                      <Image
-                        source={{ uri: post.image }}
-                        style={{ width: 200, height: 200, marginTop: 5 }}
-                      />
-                    )}
-                  </View>
-                ))
-              ) : (
-                <Text style={{ color: "#FFFFFF" }}>No posts available</Text>
-              )}
-            </>
-          )}
-        </View>
-      </ScrollView>
+            </View>
+            {error ? (
+              <Text style={styles.error}>Fel: {error}</Text>
+            ) : posts.length > 0 ? (
+              <FlatList
+                data={posts}
+                renderItem={renderPost}
+                keyExtractor={(item) => item._id}
+                numColumns={2}
+                columnWrapperStyle={styles.columnWrapper}
+                contentContainerStyle={styles.listContent}
+                showsVerticalScrollIndicator={false}
+              />
+            ) : (
+              <Text style={styles.noPosts}>No posts available</Text>
+            )}
+          </>
+        )}
+      </View>
     </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#161622",
+  },
+  container: {
+    flex: 1,
+    paddingHorizontal: 16,
+  },
+  headerContainer: {
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+    alignItems: "center",
+    backgroundColor: "#161622",
+    borderBottomWidth: 1, // För felsökning
+    borderBottomColor: "#FFFFFF", // För felsökning
+  },
+  header: {
+    fontSize: 24,
+    color: "#FFFFFF",
+    fontFamily: "Psemibold",
+    textAlign: "center",
+  },
+  error: {
+    color: "#FF0000",
+    textAlign: "center",
+    marginVertical: 10,
+  },
+  noPosts: {
+    color: "#FFFFFF",
+    textAlign: "center",
+    fontFamily: "Pregular",
+    fontSize: 16,
+    marginTop: 20,
+  },
+  card: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 10,
+    padding: 12,
+    margin: 8,
+    flex: 1,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontFamily: "Psemibold",
+    color: "#161622",
+    marginBottom: 8,
+  },
+  cardImage: {
+    width: "100%",
+    height: 150,
+    borderRadius: 8,
+  },
+  columnWrapper: {
+    justifyContent: "space-between",
+  },
+  listContent: {
+    paddingBottom: 20,
+  },
+  loader: {
+    flex: 1,
+    justifyContent: "center",
+  },
+});
 
 export default Home;
