@@ -5,6 +5,7 @@ import {
   ScrollView,
   ActivityIndicator,
   Platform,
+  Image,
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import { useFocusEffect } from "@react-navigation/native";
@@ -70,17 +71,28 @@ const Home = () => {
                 <Text style={{ color: "#FF0000" }}>Fel: {error}</Text>
               ) : posts.length > 0 ? (
                 posts.map((post) => (
-                  <Text
+                  <View
                     key={post._id}
                     style={{
-                      color: "#FFFFFF",
-                      fontSize: 16,
-                      fontFamily: "Pregular",
-                      marginVertical: 5,
+                      marginVertical: 10,
                     }}
                   >
-                    {post.title}
-                  </Text>
+                    <Text
+                      style={{
+                        color: "#bc1111",
+                        fontSize: 16,
+                        fontFamily: "Pregular",
+                      }}
+                    >
+                      {post.title}
+                    </Text>
+                    {post.image && (
+                      <Image
+                        source={{ uri: post.image }}
+                        style={{ width: 200, height: 200, marginTop: 5 }}
+                      />
+                    )}
+                  </View>
                 ))
               ) : (
                 <Text style={{ color: "#FFFFFF" }}>No posts available</Text>

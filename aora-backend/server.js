@@ -89,9 +89,9 @@ app.post("/api/posts", async (req, res) => {
     const user = await User.findById(decoded.id);
     if (!user) return res.status(404).json({ message: "Användare ej hittad" });
 
-    const { title } = req.body;
+    const { title, image } = req.body;
     if (!title) return res.status(400).json({ message: "Title saknas" });
-    const post = new Post({ title, creator: user._id });
+    const post = new Post({ title, image, creator: user._id });
     await post.save();
     res.status(201).json(post);
   } catch (error) {
