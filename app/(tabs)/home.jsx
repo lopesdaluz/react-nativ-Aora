@@ -7,10 +7,12 @@ import {
   Platform,
   Image,
   StyleSheet,
+  TouchableOpacity,
 } from "react-native";
 import React, { useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
-import { getCurrentUser } from "../../lib/api";
+import { getCurrentUser, logoutUser } from "../../lib/api";
+import { Link, router } from "expo-router";
 
 const BASE_URL =
   Platform.OS === "web" ? "http://localhost:3000" : "http://192.168.0.54:3000";
@@ -49,6 +51,16 @@ const Home = () => {
     }, [])
   );
 
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+      router.replace("/sign-in");
+    } catch (error) {
+      console.log("Logout failed", error.message);
+      setError("Logout not successfull");
+    }
+  };
+
   const renderPost = ({ item }) => (
     <View style={styles.card}>
       <Text style={styles.cardTitle}>{item.title}</Text>
@@ -78,6 +90,12 @@ const Home = () => {
               <Text style={styles.header}>
                 {user ? `Welcome back, ${user.username}!` : "No user found"}
               </Text>
+              <TouchableOpacity
+                style={styles.logoutButton}
+                onPress={handleLogout}
+              >
+                <Text style={styles.logoutText}>Log out</Text>
+              </TouchableOpacity>
             </View>
             {error ? (
               <Text style={styles.error}>Fel: {error}</Text>
@@ -105,6 +123,7 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: "#161622",
+    paddingTop: Platform.OS === "ios" ? 0 : 40,
   },
   container: {
     flex: 1,
@@ -115,14 +134,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     alignItems: "center",
     backgroundColor: "#161622",
-    borderBottomWidth: 1, // För felsökning
-    borderBottomColor: "#FFFFFF", // För felsökning
+    borderBottomWidth: 1,
+    borderBottomColor: "#FFFFFF",
   },
   header: {
     fontSize: 24,
     color: "#FFFFFF",
     fontFamily: "Psemibold",
     textAlign: "center",
+  },
+  logoutButton: {
+    backgroundColor: "#FFA001",
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  logoutText: {
+    color: "#FFFFFF",
+    fontFamily: "Pregular",
+    fontSize: 16,
   },
   error: {
     color: "#FF0000",
