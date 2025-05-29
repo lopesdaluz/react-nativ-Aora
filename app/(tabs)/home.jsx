@@ -9,8 +9,8 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
-import React, { useState } from "react";
-import { useFocusEffect } from "@react-navigation/native";
+import React, { useState, useEffect } from "react";
+
 import { getCurrentUser, logoutUser } from "../../lib/api";
 import { Link, router } from "expo-router";
 
@@ -45,11 +45,9 @@ const Home = () => {
     }
   };
 
-  useFocusEffect(
-    React.useCallback(() => {
-      fetchData();
-    }, [])
-  );
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const handleLogout = async () => {
     try {

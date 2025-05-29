@@ -24,30 +24,37 @@ const Create = () => {
 
   const navigation = useNavigation();
 
-  //Funktion för att välja bild
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
-      quality: 1,
+      quality: 0.5,
     });
     if (!result.canceled) {
-      setImage(result.assets[0].uri); //spara bildens URI
+      const uri = result.assets[0].uri;
+      const response = await fetch(uri);
+      const blob = await response.blob();
+      if (blob.size > 1000000) {
+        setError("bilden är för stor");
+      }
+      setImage(uri);
+      console.log("Vald bild URI:", uri, "Storlek:", blob.size);
+      // setImage(result.assets[0].uri);
+      // console.log("Vald bild URI:", result.assets[0].uri);
     }
   };
 
-  //hantera post-anropet
   const handleSubmit = async () => {
     setIsSubmitting(true);
     setError(null);
     try {
       if (!title.trim()) throw new Error("Title cannot be empty");
-      const token = await AsyncStorage.getItem("token"); //hämtar token för autentisering
+      const token = await AsyncStorage.getItem("token");
       if (!token) throw new Error("No token found");
-      const user = await getCurrentUser(); //hämtar den inloggade
+      const user = await getCurrentUser();
+      console.log("Skickar post:", { title, image, creator: user.id });
       const response = await fetch(`${BASE_URL}/api/posts`, {
-        //skickar POST till api/post
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -55,16 +62,17 @@ const Create = () => {
         },
         body: JSON.stringify({ title, image, creator: user.id }),
       });
+      const data = await response.json();
       if (!response.ok) {
-        const data = await response.json();
         throw new Error(data.message || "Failed to create post");
       }
 
-      setTitle(""); //Rensa input
-      setImage(null); //Rensa bild
+      setTitle("");
+      setImage(null);
       alert("Post created");
       navigation.navigate("home");
     } catch (error) {
+      console.error("Skapa post fel:", error);
       setError(error.message);
     } finally {
       setIsSubmitting(false);
@@ -97,8 +105,7 @@ const Create = () => {
           placeholderTextColor="#888888"
         />
         <Button title="Pick an image" onPress={pickImage} />
-
-        {Image && (
+        {image && (
           <Image
             source={{ uri: image }}
             style={{ width: 200, height: 200, marginVertical: 10 }}

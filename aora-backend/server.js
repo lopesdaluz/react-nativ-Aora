@@ -7,8 +7,24 @@ const jwt = require("jsonwebtoken");
 const Post = require("./models/Post");
 
 const app = express();
+
+//Middleware
 app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:8081",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  })
+);
+app.options("/api/posts", cors());
+
+// Logga alla förfrågningar
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.url} anropad`);
+  next();
+});
 
 //Anslut till MongoDB
 mongoose
@@ -83,18 +99,39 @@ app.get("/api/posts", async (req, res) => {
 // POST: Skapa en ny post
 app.post("/api/posts", async (req, res) => {
   try {
+    if (!req.body) {
+      return res.status(400).json({ message: "Ingen body i förfrågan" });
+    }
+
     const token = req.headers.authorization?.split(" ")[1];
-    if (!token) return res.status(401).json({ message: "Ingen token" });
+    if (!token) {
+      return res.status(401).json({ message: "Ingen token" });
+    }
+
     const decoded = jwt.verify(token, "dinhemliganyckel");
     const user = await User.findById(decoded.id);
-    if (!user) return res.status(404).json({ message: "Användare ej hittad" });
+    if (!user) {
+      return res.status(404).json({ message: "Användare ej hittad" });
+    }
 
-    const { title, image } = req.body;
-    if (!title) return res.status(400).json({ message: "Title saknas" });
+    const { title, image, creator } = req.body;
+    if (!title) {
+      return res.status(400).json({ message: "Title saknas" });
+    }
+
+    if (image && typeof image === "string" && image.length > 100000) {
+      return res.status(400).json({ message: "Bilden är för stor" });
+    }
+
+    if (creator && creator !== user._id.toString()) {
+      return res.status(400).json({ message: "Ogiltig creator" });
+    }
+
     const post = new Post({ title, image, creator: user._id });
     await post.save();
     res.status(201).json(post);
   } catch (error) {
+    console.error("Skapa post fel:", error.message, error.stack);
     res
       .status(500)
       .json({ message: "Fel vid skapande av post", error: error.message });
