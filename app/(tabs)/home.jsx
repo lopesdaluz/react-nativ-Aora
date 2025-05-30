@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import React, { useState, useCallback } from "react";
 import { useFocusEffect } from "@react-navigation/native";
-
+import { MaterialIcons } from "@expo/vector-icons";
 import { getCurrentUser, logoutUser } from "../../lib/api";
 import { Link, router } from "expo-router";
 
@@ -72,6 +72,14 @@ const Home = () => {
           resizeMode="cover"
         />
       )}
+      <View style={styles.iconContainer}>
+        <TouchableOpacity>
+          <MaterialIcons name="edit" size={20} color="#FFA001" />
+        </TouchableOpacity>
+        <TouchableOpacity>
+          <MaterialIcons name="delete" size={20} color="#FF0000" />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 
@@ -199,6 +207,12 @@ const styles = StyleSheet.create({
   loader: {
     flex: 1,
     justifyContent: "center",
+  },
+  iconContainer: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    marginTop: 8,
+    gap: 10,
   },
 });
 
