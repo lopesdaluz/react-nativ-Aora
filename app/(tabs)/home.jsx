@@ -73,7 +73,15 @@ const Home = () => {
         />
       )}
       <View style={styles.iconContainer}>
-        <TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => {
+            console.log("Navigating to update with post:", item);
+            router.push({
+              pathname: "/(tabs)/update",
+              params: { post: JSON.stringify(item) },
+            });
+          }}
+        >
           <MaterialIcons name="edit" size={20} color="#FFA001" />
         </TouchableOpacity>
         <TouchableOpacity>

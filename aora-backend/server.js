@@ -5,6 +5,7 @@ const cors = require("cors");
 const User = require("./models/User");
 const jwt = require("jsonwebtoken");
 const Post = require("./models/Post");
+require("dotenv").config();
 
 const app = express();
 
@@ -58,9 +59,10 @@ app.post("/api/login", async (req, res) => {
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ error: "Fel email eller lösenord" });
     }
-    const token = jwt.sign({ id: user._id }, "dinhemliganyckel", {
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
+
     res.json({
       message: "inloggad",
       token,
@@ -77,7 +79,7 @@ app.get("/api/user", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) return res.status(401).json({ error: "Ingen token" });
   try {
-    const decoded = jwt.verify(token, "dinhemliganyckel");
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findById(decoded.id).select("-password");
     if (!user) return res.status(404).json({ error: "Användare ej hittad" });
     res.json({ id: user._id, email: user.email, username: user.username });
@@ -108,7 +110,7 @@ app.post("/api/posts", async (req, res) => {
       return res.status(401).json({ message: "Ingen token" });
     }
 
-    const decoded = jwt.verify(token, "dinhemliganyckel");
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findById(decoded.id);
     if (!user) {
       return res.status(404).json({ message: "Användare ej hittad" });
@@ -138,6 +140,48 @@ app.post("/api/posts", async (req, res) => {
   }
 });
 
+//PUT: router för att uppdatera en post
+app.put("/api/posts/:id", async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+    console.log("Received token:", token);
+    if (!token) return res.status(401).json({ message: "No token provided" });
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("Decoded token:", decoded);
+    const user = await User.findById(decoded.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+    console.log("User ID:", user._id.toString());
+
+    const { id } = req.params;
+    const { title, image } = req.body;
+    if (!title) return res.status(400).json({ message: "Title is required" });
+
+    const post = await Post.findById(id);
+    if (!post) return res.status(404).json({ message: "Post not found" });
+    console.log("Post ID:", id);
+    console.log("Post Creator ID:", post.creator.toString());
+
+    if (post.creator.toString() !== user._id.toString()) {
+      console.log(
+        "Authorization failed: User ID does not match Post Creator ID"
+      );
+      return res
+        .status(403)
+        .json({ message: "Not authorized to update this post" });
+    }
+
+    post.title = title;
+    post.image = image || post.image;
+    await post.save();
+    console.log("Post updated:", post);
+    res.status(200).json(post);
+  } catch (error) {
+    console.error("Update post error:", error.message);
+    res
+      .status(500)
+      .json({ message: "Error updating post", error: error.message });
+  }
+});
 app.listen(3000, () => {
   console.log("Server kör på port 3000");
 });
